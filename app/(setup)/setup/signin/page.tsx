@@ -15,19 +15,17 @@ export default function SignIn() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       const result = await signIn({ email, password });
       if (result.success) {
-        console.log('Redirecting to:', result.redirectTo); // デバッグ用
-        await router.push(result.redirectTo);
+        router.push(result.redirectTo);
         router.refresh();
       }
     } catch (error: any) {
-      console.error("Error signing in:", error);
       setErrorMessage(error.message);
     } finally {
       setLoading(false);
@@ -61,7 +59,7 @@ export default function SignIn() {
           <h2 className="text-3xl font-bold text-gray-800">ログイン</h2>
         </div>
 
-        <form onSubmit={handleSignIn} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <Input
             label="メールアドレス"
             type="email"
