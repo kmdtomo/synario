@@ -1,7 +1,8 @@
-import { supabaseClient } from "../supabase/client";
+"use client";
+
 import { getErrorMessage } from "./utils";
 import { Session } from '@supabase/supabase-js';
-
+import { createClient } from "@/lib/db/supabase/client";
 
 interface SignUpParams {
   email: string;
@@ -9,8 +10,9 @@ interface SignUpParams {
 }
 
 interface SignUpResult {
-    session: Session | null;
-    success: boolean;
+  session: Session | null;
+  success: boolean;
+  redirectTo: string;
 }
 
 interface SignUpError {
@@ -20,30 +22,39 @@ interface SignUpError {
 
 export async function signUp({ email, password }: SignUpParams): Promise<SignUpResult> {
   try {
-    const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      }
     });
 
-    if (authError) throw authError;
-    if (!authData.user) throw new Error('ユーザー情報の取得に失敗しました');
+    if (error) throw error;
+    if (!data?.session) {
+      return {
+        session: null,
+        success: true,
+        redirectTo: '/auth/verify-email'  // メール確認が必要な場合
+      };
+    }
 
-    // プロフィール情報をprofilesテーブルに保存
-    const { error: profileError } = await supabaseClient
+    // プロフィール作成
+    const { error: profileError } = await supabase
       .from('profiles')
-      .insert([
-        {
-          id: authData.user.id,
-          email: email,
-        }
-      ]);
+      .insert({
+        id: data.session.user.id,
+        email: data.session.user.email,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
 
     if (profileError) throw profileError;
 
-    return { session: authData.session, success: true };
+    return {
+      session: data.session,
+      success: true,
+      redirectTo: '/setup/profile'  // プロフィール設定ページへ
+    };
+
   } catch (error) {
     throw {
       message: getErrorMessage(error),

@@ -1,20 +1,37 @@
+"use server";
+
+import { cookies } from "next/headers";
+import { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/db/supabase/server";
+import type { Database } from "@/types/supabase";
 
 export const getCurrentProfile = async () => {
-  const supabase = createClient();
+  const cookieStore = await cookies();
+  const supabase = await createClient(cookieStore);
 
-  // セッション取得（推奨される方法）
-  const { data: { session } } = await supabase.auth.getSession();
-  
-  // セッションがない場合は未ログイン
-  if (!session?.user) return null;
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) return null;
 
-  // プロフィール取得
-  const { data: profile, error } = await supabase
+  const { data, error: profileError, status } = await supabase
     .from("profiles")
-    .select("*")
-    .eq("id", session.user.id)  // session.user.idを使用
+    .select(`*`)
+    .eq("id", user.id)
     .single();
 
-  return error ? null : profile;
-}; 
+  if (profileError && status !== 406) return null;
+  return data;
+};
+
+export const getProfileByUsername = async (
+  supabase: SupabaseClient<Database>,
+  username: string
+) => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select(`*`)
+    .eq("username", username)
+    .single();
+
+  if (error) return null;
+  return data;
+};

@@ -16,7 +16,7 @@ export default function SignUp() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const router = useRouter();
 
-  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
@@ -27,7 +27,6 @@ export default function SignUp() {
         router.refresh();
       }
     } catch (error: any) {
-      console.error("Error signing up:", error);
       setErrorMessage(error.message);
     } finally {
       setLoading(false);
@@ -66,7 +65,7 @@ export default function SignUp() {
           <h2 className="text-3xl font-bold text-gray-800">アカウントを作成</h2>
         </div>
         
-        <form onSubmit={handleSignUp} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <Input
             label="メールアドレス"
             type="email"

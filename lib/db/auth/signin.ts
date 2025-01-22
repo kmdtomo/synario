@@ -1,6 +1,8 @@
-import { supabaseClient } from "../supabase/client";
+"use client";
+
 import { getErrorMessage } from "./utils";
 import { Session } from '@supabase/supabase-js';
+import { createClient } from "@/lib/db/supabase/client";
 
 interface SignInParams {
   email: string;
@@ -20,31 +22,23 @@ interface SignInError {
 
 export async function signIn({ email, password }: SignInParams): Promise<SignInResult> {
   try {
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) {
-      // メール未確認の場合
-      if (error.message.includes('Email not confirmed')) {
-        // メール再送信
-        await supabaseClient.auth.resend({
-          type: 'signup',
-          email,
-        });
-        throw new Error('メールアドレスの確認が必要です。確認メールを再送信しました。');
-      }
-      throw error;
-    }
-    if (!data.session) throw new Error('セッションの取得に失敗しました');
+    if (error) throw error;
+    if (!data?.session) throw new Error('セッションの取得に失敗しました');
 
-    // プロフィール情報を確認
-    const { data: profileData } = await supabaseClient
+    // プロフィール確認
+    const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('user_name')
       .eq('id', data.session.user.id)
       .single();
+
+    if (profileError) throw profileError;
 
     if (!profileData?.user_name) {
       return {
@@ -55,8 +49,8 @@ export async function signIn({ email, password }: SignInParams): Promise<SignInR
     }
 
     // チーム情報を確認
-    const { data: teamData } = await supabaseClient
-      .from('team_members')
+    const { data: teamData } = await supabase
+      .from('teams_members')
       .select('team_id')
       .eq('user_id', data.session.user.id)
       .single();
@@ -65,11 +59,10 @@ export async function signIn({ email, password }: SignInParams): Promise<SignInR
       return {
         session: data.session,
         success: true,
-        redirectTo: '/setup/project'
+        redirectTo: '/setup/team'
       };
     }
 
-    // 全ての設定が完了している場合
     return {
       session: data.session,
       success: true,
@@ -82,4 +75,22 @@ export async function signIn({ email, password }: SignInParams): Promise<SignInR
       code: (error as any).code
     } as SignInError;
   }
+}
+
+export function useSignIn() {
+  const supabase = createClient();
+
+  return {
+    signInWithOAuth: async (provider: 'google' | 'github') => {
+      return await supabase.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: `${location.origin}/auth/callback` }
+      });
+    },
+    
+    // リアルタイムの認証状態監視など
+    onAuthStateChange: (callback: () => void) => {
+      return supabase.auth.onAuthStateChange(callback);
+    }
+  };
 } 
