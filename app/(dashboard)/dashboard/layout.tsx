@@ -37,25 +37,25 @@ export default function DashboardLayout({
           <nav className="space-y-1">
             <a
               href="#"
-              className="block px-3 py-2 text-sm font-medium rounded-lg bg-white/10 text-white/90"
+              className="block px-3 py-2 text-sm font-bold rounded-lg bg-white/10 text-white"
             >
               ダッシュボード
             </a>
             <a
               href="#"
-              className="block px-3 py-2 text-sm font-medium rounded-lg text-white/75 hover:bg-white/10 hover:text-white/90 transition-all"
+              className="block px-3 py-2 text-sm font-bold rounded-lg text-white hover:bg-white/10 transition-all"
             >
               KPI
             </a>
             <a
               href="#"
-              className="block px-3 py-2 text-sm font-medium rounded-lg text-white/75 hover:bg-white/10 hover:text-white/90 transition-all"
+              className="block px-3 py-2 text-sm font-bold rounded-lg text-white hover:bg-white/10 transition-all"
             >
               タスク
             </a>
             <a
               href="#"
-              className="block px-3 py-2 text-sm font-medium rounded-lg text-white/75 hover:bg-white/10 hover:text-white/90 transition-all"
+              className="block px-3 py-2 text-sm font-bold rounded-lg text-white hover:bg-white/10 transition-all"
             >
               カレンダー
             </a>
@@ -69,13 +69,13 @@ export default function DashboardLayout({
           <nav className="space-y-1">
             <a
               href="#"
-              className="block px-3 py-2 text-sm font-medium rounded-lg text-white/75 hover:bg-white/10 hover:text-white/90 transition-all"
+              className="block px-3 py-2 text-sm font-bold rounded-lg text-white hover:bg-white/10 transition-all"
             >
               メンバー
             </a>
             <a
               href="#"
-              className="block px-3 py-2 text-sm font-medium rounded-lg text-white/75 hover:bg-white/10 hover:text-white/90 transition-all"
+              className="block px-3 py-2 text-sm font-bold rounded-lg text-white hover:bg-white/10 transition-all"
             >
               レポート
             </a>
@@ -87,13 +87,13 @@ export default function DashboardLayout({
           <nav className="space-y-1">
             <a
               href="#"
-              className="block px-3 py-2 text-sm font-medium text-white/75 rounded-lg hover:bg-white/10 hover:text-white/90 transition-all"
+              className="block px-3 py-2 text-sm font-bold rounded-lg text-white hover:bg-white/10 transition-all"
             >
               設定
             </a>
             <a
               href="#"
-              className="block px-3 py-2 text-sm font-medium text-white/75 rounded-lg hover:bg-white/10 hover:text-white/90 transition-all"
+              className="block px-3 py-2 text-sm font-bold rounded-lg text-white hover:bg-white/10 transition-all"
             >
               ヘルプ
             </a>
