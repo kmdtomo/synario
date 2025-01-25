@@ -50,7 +50,7 @@ export async function signIn({ email, password }: SignInParams): Promise<SignInR
 
     // チーム情報を確認
     const { data: teamData } = await supabase
-      .from('teams_members')
+      .from('team_members')
       .select('team_id')
       .eq('user_id', data.session.user.id)
       .single();
@@ -66,7 +66,7 @@ export async function signIn({ email, password }: SignInParams): Promise<SignInR
     return {
       session: data.session,
       success: true,
-      redirectTo: '/dashboard'
+      redirectTo: `/dashboard/${teamData.team_id}`
     };
 
   } catch (error) {
