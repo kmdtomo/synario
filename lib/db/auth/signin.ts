@@ -40,6 +40,7 @@ export async function signIn({ email, password }: SignInParams): Promise<SignInR
 
     if (profileError) throw profileError;
 
+
     if (!profileData?.user_name) {
       return {
         session: data.session,
@@ -77,20 +78,20 @@ export async function signIn({ email, password }: SignInParams): Promise<SignInR
   }
 }
 
-export function useSignIn() {
-  const supabase = createClient();
+// export function useSignIn() {
+//   const supabase = createClient();
 
-  return {
-    signInWithOAuth: async (provider: 'google' | 'github') => {
-      return await supabase.auth.signInWithOAuth({
-        provider,
-        options: { redirectTo: `${location.origin}/auth/callback` }
-      });
-    },
+//   return {
+//     signInWithOAuth: async (provider: 'google' | 'github') => {
+//       return await supabase.auth.signInWithOAuth({
+//         provider,
+//         options: { redirectTo: `${location.origin}/auth/callback` }
+//       });
+//     },
     
-    // リアルタイムの認証状態監視など
-    onAuthStateChange: (callback: () => void) => {
-      return supabase.auth.onAuthStateChange(callback);
-    }
-  };
-} 
+//     // リアルタイムの認証状態監視など
+//     onAuthStateChange: (callback: () => void) => {
+//       return supabase.auth.onAuthStateChange(callback);
+//     }
+//   };
+// } 
