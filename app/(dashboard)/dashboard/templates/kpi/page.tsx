@@ -2,7 +2,7 @@
 
 import KpiCard from "@/components/modules/KpiCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, LineChart, Megaphone, User, Info } from "lucide-react";
+import { Building2, LineChart, Megaphone, User, Info, X } from "lucide-react";
 import { ReactElement, useState } from 'react';
 import { Modal } from "@/components/ui/common/modal";
 
@@ -148,6 +148,20 @@ const priorityStyles: Record<string, { color: string; label: string }> = {
 
 export default function KpiTemplate() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 4;
+
+  const handleNext = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
 
   return (
     <div className="p-8 space-y-8">
@@ -324,162 +338,157 @@ export default function KpiTemplate() {
 
       {/* Synarioスライドオーバー */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50">
-          <div className="fixed inset-y-0 right-0 w-full max-w-3xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-xl">
-            <div className="h-full p-8 overflow-y-auto">
-              <div className="flex justify-between items-center mb-8">
-                <div className="space-y-2">
-                  <h2 className="text-2xl font-bold text-white">Synario</h2>
-                  <p className="text-white text-sm">プロジェクトの背景とチームの目指す未来</p>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl w-full max-w-4xl relative">
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <div className="p-8">
+              {/* ステップバー */}
+              <div className="relative mb-12">
+                <div className="absolute top-5 w-full h-0.5 bg-gray-200">
+                  <div 
+                    className="absolute h-full bg-gradient-to-r from-purple-600 to-indigo-600 transition-all duration-300"
+                    style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
+                  />
                 </div>
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="p-2 hover:bg-white/20 rounded-full transition-colors"
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
+                <div className="relative flex justify-between">
+                  {[1, 2, 3, 4].map((step) => (
+                    <div key={step} className="flex flex-col items-center">
+                      <div 
+                        className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-xs mb-2 transition-all duration-300 ${
+                          step === currentStep
+                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg scale-110'
+                            : step < currentStep
+                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white'
+                            : 'bg-white text-gray-400 border-2 border-gray-200'
+                        }`}
+                      >
+                        {step}
+                      </div>
+                      <span className={`text-sm font-bold tracking-wider ${
+                        step === currentStep 
+                          ? 'bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent scale-105'
+                          : step < currentStep
+                          ? 'text-purple-600'
+                          : 'text-gray-400'
+                      }`}>
+                        {step === 1 ? 'Trigger' : step === 2 ? 'Vision' : step === 3 ? 'Unite' : 'Achieve'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div className="space-y-8">
-                {/* ビジョン */}
-                <div className="space-y-4">
-                  <h3 className="text-xl font-bold border-b border-white/30 pb-2 flex items-center gap-2 text-white">
-                    <svg
-                      className="w-5 h-5 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
-                      />
-                    </svg>
-                    ビジョン（どんな未来を目指す？）
-                  </h3>
-                  <div className="bg-white/15 backdrop-blur-sm rounded-lg p-6 space-y-4">
-                    <p className="text-white">
-                      メンバー一人一人が主体性を持ち、自律的に行動できる組織を目指します。
-                      全員が目的を理解し、共に成長しながら、より良い未来を創造していく組織へと進化します。
-                    </p>
-                  </div>
-                </div>
-
-                {/* きっかけ */}
-                <div className="space-y-4">
-                  <h3 className="text-xl font-bold border-b border-white/30 pb-2 flex items-center gap-2 text-white">
-                    <svg
-                      className="w-5 h-5 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                      />
-                    </svg>
-                    きっかけ（なぜ必要？）
-                  </h3>
-                  <div className="bg-white/15 backdrop-blur-sm rounded-lg p-6 space-y-4">
-                    <p className="text-white">
-                      業務効率化や生産性向上が求められる中、部門間の連携不足や情報共有の遅れが目立ってきています。
-                      特に、営業部門と製造部門の連携、バックオフィスと現場の情報共有など、組織の成長に伴う課題が増えています。
-                      この状況を改善し、より効率的で活気のある職場を作るために、新しい取り組みが必要となりました。
-                    </p>
-                  </div>
-                </div>
-
-                {/* ゴール */}
-                <div className="space-y-4">
-                  <h3 className="text-xl font-bold border-b border-white/30 pb-2 flex items-center gap-2 text-white">
-                    <svg
-                      className="w-5 h-5 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"
-                      />
-                    </svg>
-                    ゴール（何が変わる？）
-                  </h3>
-                  <div className="bg-white/15 backdrop-blur-sm rounded-lg p-6">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2 p-4 bg-white/10 rounded-lg border border-white/10">
-                        <h4 className="font-semibold text-white">Before</h4>
-                        <ul className="list-disc list-inside space-y-1 text-white">
-                          <li>部門間の情報共有の遅れ</li>
-                          <li>業務の属人化</li>
-                          <li>非効率な会議や重複作業</li>
-                          <li>改善提案の機会不足</li>
-                        </ul>
-                      </div>
-                      <div className="space-y-2 p-4 bg-white/10 rounded-lg border border-white/10">
-                        <h4 className="font-semibold text-white">After</h4>
-                        <ul className="list-disc list-inside space-y-1 text-white">
-                          <li>スムーズな情報共有</li>
-                          <li>標準化された業務フロー</li>
-                          <li>効率的な会議運営</li>
-                          <li>活発な改善活動</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 当事者意識 */}
-                <div className="space-y-4">
-                  <h3 className="text-xl font-bold border-b border-white/30 pb-2 flex items-center gap-2 text-white">
-                    <svg
-                      className="w-5 h-5 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                      />
-                    </svg>
-                    当事者意識（メンバーへの期待）
-                  </h3>
-                  <div className="bg-white/15 backdrop-blur-sm rounded-lg p-6 space-y-4">
-                    <div className="space-y-4">
-                      <p className="text-white">
-                        業務改善の成功には、メンバー一人一人の積極的な参加が不可欠です。
-                        以下のような行動を期待しています：
+              <div className="space-y-6">
+                {/* Step Content */}
+                {currentStep === 1 && (
+                  <div className="space-y-4 animate-fadeIn">
+                    <div className="text-center space-y-2">
+                      <h2 className="text-xl font-bold text-gray-900">
+                        なぜこのプロジェクトをするのか？
+                      </h2>
+                      <p className="text-sm text-gray-600">
+                        現在の課題や燃える理由、衝動、スタートのきっかけ
                       </p>
-                      <ul className="list-disc list-inside space-y-2 text-white">
-                        <li>日々の業務で気づいた改善点を積極的に共有する</li>
-                        <li>部門の垣根を越えて、お互いの業務を理解し合う</li>
-                        <li>定例ミーティングで建設的な意見を出し合う</li>
-                        <li>新しい業務プロセスの定着に協力する</li>
-                      </ul>
+                    </div>
+                    <div className="bg-gray-50/50 border border-gray-100 rounded-lg p-6">
+                      <p className="text-gray-700">
+                        現在の課題や燃える理由、衝動、スタートのきっかけを明確にします。
+                        日々の業務に追われ、本来やるべきことができていない状況が続いています。
+                        情報共有の遅れや重複作業により、チームの力が十分に発揮できていないことに課題を感じています。
+                      </p>
                     </div>
                   </div>
+                )}
+
+                {currentStep === 2 && (
+                  <div className="space-y-4 animate-fadeIn">
+                    <div className="text-center space-y-2">
+                      <h2 className="text-xl font-bold text-gray-900">
+                        プロジェクトの完成形？
+                      </h2>
+                      <p className="text-sm text-gray-600">
+                        理想の姿やゴールイメージ
+                      </p>
+                    </div>
+                    <div className="bg-gray-50/50 border border-gray-100 rounded-lg p-6">
+                      <p className="text-gray-700">
+                        理想の姿やゴールイメージを描きます。
+                        メンバー全員が目的を理解し、自主的に行動できる組織になっています。
+                        無駄な作業が削減され、本来注力すべき業務に時間を使えるようになっています。
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {currentStep === 3 && (
+                  <div className="space-y-4 animate-fadeIn">
+                    <div className="text-center space-y-2">
+                      <h2 className="text-xl font-bold text-gray-900">
+                        チームをどう巻き込むか？
+                      </h2>
+                      <p className="text-sm text-gray-600">
+                        当事者意識を高め、メンバーが自分事として取り組む仕掛けや工夫
+                      </p>
+                    </div>
+                    <div className="bg-gray-50/50 border border-gray-100 rounded-lg p-6">
+                      <p className="text-gray-700">
+                        当事者意識を高め、メンバーが自分事として取り組む仕掛けや工夫を考えます。
+                        定期的な振り返りの場を設け、メンバー全員が改善案を出し合える機会を作ります。
+                        小さな成功体験を共有し、チーム全体のモチベーション向上につなげていきます。
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {currentStep === 4 && (
+                  <div className="space-y-4 animate-fadeIn">
+                    <div className="text-center space-y-2">
+                      <h2 className="text-xl font-bold text-gray-900">
+                        プロジェクト成功した後の世界？
+                      </h2>
+                      <p className="text-sm text-gray-600">
+                        プロジェクトがうまくいったときの勝利のイメージや喜びの場面
+                      </p>
+                    </div>
+                    <div className="bg-gray-50/50 border border-gray-100 rounded-lg p-6">
+                      <p className="text-gray-700">
+                        プロジェクトがうまくいったときの勝利のイメージや喜びの場面を描きます。
+                        メンバーから自発的な改善提案が日常的に出るようになり、業務効率が大きく向上しています。
+                        チーム全体が活気にあふれ、新しいチャレンジに積極的に取り組んでいます。
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Navigation Buttons */}
+                <div className="flex justify-between pt-4">
+                  <button
+                    onClick={handlePrev}
+                    className={`px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                      currentStep === 1
+                        ? 'opacity-0 pointer-events-none'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                    disabled={currentStep === 1}
+                  >
+                    前へ
+                  </button>
+                  <button
+                    onClick={handleNext}
+                    className={`px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                      currentStep === totalSteps
+                        ? 'opacity-0 pointer-events-none'
+                        : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700'
+                    }`}
+                    disabled={currentStep === totalSteps}
+                  >
+                    次へ
+                  </button>
                 </div>
               </div>
             </div>

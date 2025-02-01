@@ -1,213 +1,270 @@
 'use client';
 
 import { Card, CardContent } from "@/components/ui/card";
-import { BookOpen, Target, Lightbulb, Users } from "lucide-react";
+import { createProject } from "@/lib/db/project/create";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function CreateProject() {
+  const params = useParams()
+  const team_id = params["team_id"] as string
+
+  const router = useRouter()
+
   // 文字数の状態管理
-  const [vision, setVision] = useState("");
   const [trigger, setTrigger] = useState("");
-  const [goalBefore, setGoalBefore] = useState("");
-  const [goalAfter, setGoalAfter] = useState("");
-  const [ownership, setOwnership] = useState("");
+  const [vision, setVision] = useState("");
+  const [unite, setUnite] = useState("");
+  const [achieve, setAchieve] = useState("");
+  const [goal, setGoal] = useState("");
+  const [name, setName] = useState("")
+  const [currentStep, setCurrentStep] = useState(1);
+
+  const handleCreateProject = async(e:React.FormEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    try{
+      const project = await createProject({
+        team_id,
+        name,
+        trigger,
+        vision,
+        unite,
+        achieve,
+        goal,
+      })
+      
+      if(project.id){
+        router.push(`/dashboard/${team_id}/project/${project.id}`)
+      }
+      
+    }catch(error){
+      console.error("プロジェクト作成失敗",{error})
+    }
+  }
 
   // 文字数制限
-  const LIMITS = {
-    vision: 200,
-    trigger: 400,
-    goal: 100,
-    ownership: 300
+  const LIMIT = 300;
+  const GOAL_LIMIT = 50;
+
+  // ステップの定義
+  const steps = [
+    {
+      id: 1,
+      name: 'Trigger',
+      title: 'なぜこのプロジェクトをするのか？',
+      description: '現在の課題や燃える理由、衝動、スタートのきっかけ',
+      value: trigger,
+      setValue: setTrigger,
+    },
+    {
+      id: 2,
+      name: 'Vision',
+      title: 'プロジェクトの完成形？',
+      description: '理想の姿やゴールイメージ',
+      value: vision,
+      setValue: setVision,
+    },
+    {
+      id: 3,
+      name: 'Unite',
+      title: 'チームをどう巻き込むか？',
+      description: '当事者意識を高め、メンバーが自分事として取り組む仕掛けや工夫',
+      value: unite,
+      setValue: setUnite,
+    },
+    {
+      id: 4,
+      name: 'Achieve',
+      title: 'プロジェクト成功した後の世界？',
+      description: 'プロジェクトがうまくいったときの勝利のイメージや喜びの場面',
+      value: achieve,
+      setValue: setAchieve,
+    }
+  ];
+
+  const currentStepData = steps[currentStep - 1];
+
+  // 次のステップへ
+  const handleNext = () => {
+    if (currentStep <= steps.length) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  // 前のステップへ
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
   };
 
   return (
-    <div className="p-8 space-y-8 max-w-4xl mx-auto">
+    <div className="p-16 space-y-8 mx-auto">
       {/* ヘッダー */}
-      <div className="space-y-3">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text">
+      <div className="space-y-2">
+        <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 text-transparent bg-clip-text">
           新規プロジェクト作成
         </h1>
-        <p className="text-sm text-gray-600 max-w-3xl leading-relaxed">
-          社内の課題解決や業務改善に向けて、チーム全員で取り組むプロジェクトを作成しましょう。
+        <p className="text-sm text-gray-600 max-w-2xl leading-relaxed">
+          プロジェクトの本質的な価値を見つめ直し、チーム全員で共有できるストーリーを作成しましょう。
         </p>
       </div>
 
-      {/* プロジェクト作成フォーム */}
-      <Card className="bg-gray-50/50 border border-gray-100 shadow-xl">
-        <CardContent className="p-8 space-y-10">
-          {/* プロジェクトの基本情報 */}
-          <div className="space-y-8">
-            {/* ビジョン */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
-                <svg
-                  className="w-5 h-5 text-purple-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
-                  />
-                </svg>
-                <label className="text-xl font-bold text-gray-900">
-                  ビジョン（どんな未来を目指す？）
-                </label>
+      {/* ステップバー */}
+      <div className="relative">
+        <div className="absolute top-5 w-[calc(100%-2rem)] h-0.5 bg-gray-200 left-4">
+          <div 
+            className="absolute h-full bg-gradient-to-r from-purple-600 to-indigo-600 transition-all duration-300"
+            style={{ 
+              width: currentStep > steps.length ? '100%' : `${((currentStep - 1) / (steps.length - 1)) * 100}%` 
+            }}
+          />
+        </div>
+        <div className="relative flex justify-between">
+          {steps.map((step) => (
+            <div key={step.id} className="flex flex-col items-center w-24">
+              <div 
+                className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold text-xs mb-2 transition-all duration-300 bg-white ${
+                  currentStep > steps.length ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white' :
+                  step.id === currentStep
+                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg scale-110'
+                    : step.id < currentStep
+                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white'
+                    : 'bg-white text-gray-400 border-2 border-gray-200'
+                }`}
+              >
+                {step.id}
               </div>
-              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-                <div className="space-y-2">
-                  <textarea
-                    value={vision}
-                    onChange={(e) => setVision(e.target.value.slice(0, LIMITS.vision))}
-                    className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all duration-200 min-h-[100px] resize-y"
-                    placeholder="例：全員が同じ目標に向かって、自主的に行動できる組織を目指します。メンバー一人一人の意見が尊重され、より良い職場環境を作っていきます。"
-                  />
-                  <p className="text-sm text-gray-500 text-right">
-                    {vision.length} / {LIMITS.vision}文字
-                  </p>
-                </div>
+              <span className={`text-sm font-bold tracking-wider text-center ${
+                currentStep > steps.length ? 'text-purple-600' :
+                step.id === currentStep 
+                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent scale-105'
+                  : step.id < currentStep
+                  ? 'text-purple-600'
+                  : 'text-gray-400'
+              }`}>
+                {step.name}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* フォーム */}
+      {currentStep <= steps.length ? (
+        <Card className="bg-gray-50/50 border border-gray-100 shadow-md mt-8">
+          <CardContent className="p-6">
+            <div className="max-w-2xl mx-auto space-y-6">
+              {/* ステップタイトル */}
+              <div className="text-center space-y-2">
+                <h2 className="text-xl font-bold text-gray-900">
+                  {currentStepData.title}
+                </h2>
+                <p className="text-sm text-gray-600">
+                  {currentStepData.description}
+                </p>
+              </div>
+
+              {/* 入力フィールド */}
+              <div className="space-y-2">
+                <textarea
+                  value={currentStepData.value}
+                  onChange={(e) => currentStepData.setValue(e.target.value.slice(0, LIMIT))}
+                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 min-h-[160px] resize-y"
+                  placeholder={currentStepData.description}
+                />
+                <p className="text-xs text-gray-500 text-right">
+                  {currentStepData.value.length} / {LIMIT}文字
+                </p>
+              </div>
+
+              {/* ナビゲーションボタン */}
+              <div className="flex justify-between pt-4">
+                <button
+                  onClick={handleBack}
+                  className={`px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                    currentStep === 1
+                      ? 'opacity-0 pointer-events-none'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  前へ
+                </button>
+                <button
+                  onClick={handleNext}
+                  className="px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700"
+                >
+                  次へ
+                </button>
               </div>
             </div>
-
-            {/* きっかけ */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
-                <svg
-                  className="w-5 h-5 text-purple-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                  />
-                </svg>
-                <label className="text-xl font-bold text-gray-900">
-                  きっかけ（なぜ必要？）
-                </label>
+          </CardContent>
+        </Card>
+      ) : (
+        // 目標入力画面
+        <Card className="bg-white border border-gray-100 shadow-md mt-8">
+          <CardContent className="p-6">
+            <div className="max-w-2xl mx-auto space-y-6">
+              <div className="text-center space-y-2">
+                <h2 className="text-xl font-bold text-gray-900">
+                  プロジェクト名
+                </h2>
+                <p className="text-sm text-gray-600">
+                  プロジェクト名を入力してください
+                </p>
               </div>
-              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-                <div className="space-y-2">
-                  <textarea
-                    value={trigger}
-                    onChange={(e) => setTrigger(e.target.value.slice(0, LIMITS.trigger))}
-                    className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all duration-200 min-h-[100px] resize-y"
-                    placeholder="例：業務の効率化が課題となっています。情報共有の遅れや重複作業が発生しており、チーム全体の生産性に影響が出ています。この状況を改善し、より良い職場にしていく必要があります。"
-                  />
-                  <p className="text-sm text-gray-500 text-right">
-                    {trigger.length} / {LIMITS.trigger}文字
-                  </p>
-                </div>
+              
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value.slice(0, GOAL_LIMIT))}
+                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200"
+                  placeholder="プロジェクト名を入力してください"
+                />
+                <p className="text-xs text-gray-500 text-right">
+                  {name.length} / {GOAL_LIMIT}文字
+                </p>
+              </div>
+              <div className="text-center space-y-2">
+                <h2 className="text-xl font-bold text-gray-900">
+                  プロジェクトの目標
+                </h2>
+                <p className="text-sm text-gray-600">
+                  これまでのストーリーを踏まえて、プロジェクトの目指す最終目標を一言で表現してください
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={goal}
+                  onChange={(e) => setGoal(e.target.value.slice(0, GOAL_LIMIT))}
+                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-lg text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200"
+                />
+                <p className="text-xs text-gray-500 text-right">
+                  {goal.length} / {GOAL_LIMIT}文字
+                </p>
+              </div>
+              <div className="flex justify-between pt-4">
+                <button
+                  onClick={handleBack}
+                  className="px-6 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 transition-all duration-300"
+                >
+                  前へ
+                </button>
+                <button
+                onClick={handleCreateProject}
+                  className="px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  プロジェクトを作成
+                </button>
               </div>
             </div>
-
-            {/* ゴール */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
-                <svg
-                  className="w-5 h-5 text-purple-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"
-                  />
-                </svg>
-                <label className="text-xl font-bold text-gray-900">
-                  ゴール（何が変わる？）
-                </label>
-              </div>
-              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <h4 className="font-semibold text-gray-900 mb-2">Before</h4>
-                    <div className="space-y-2">
-                      <textarea
-                        value={goalBefore}
-                        onChange={(e) => setGoalBefore(e.target.value.slice(0, LIMITS.goal))}
-                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all duration-200 min-h-[120px] resize-y"
-                        placeholder="・業務効率が悪く、時間がかかっている"
-                      />
-                      <p className="text-sm text-gray-500 text-right">
-                        {goalBefore.length} / {LIMITS.goal}文字
-                      </p>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="font-semibold text-gray-900 mb-2">After</h4>
-                    <div className="space-y-2">
-                      <textarea
-                        value={goalAfter}
-                        onChange={(e) => setGoalAfter(e.target.value.slice(0, LIMITS.goal))}
-                        className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all duration-200 min-h-[120px] resize-y"
-                        placeholder="・効率的な業務フローが確立されている"
-                      />
-                      <p className="text-sm text-gray-500 text-right">
-                        {goalAfter.length} / {LIMITS.goal}文字
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 当事者意識 */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
-                <svg
-                  className="w-5 h-5 text-purple-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-                <label className="text-xl font-bold text-gray-900">
-                  当事者意識（メンバーへの期待）
-                </label>
-              </div>
-              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
-                <div className="space-y-2">
-                  <textarea
-                    value={ownership}
-                    onChange={(e) => setOwnership(e.target.value.slice(0, LIMITS.ownership))}
-                    className="w-full px-4 py-3 bg-gray-50/50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white transition-all duration-200 min-h-[120px] resize-y"
-                    placeholder="例：
-・気づいた課題は積極的に共有する
-・チーム全体の目標を意識して行動する
-・建設的な意見を出し合う"
-                  />
-                  <p className="text-sm text-gray-500 text-right">
-                    {ownership.length} / {LIMITS.ownership}文字
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 作成ボタン */}
-          <div className="flex justify-center pt-6">
-            <button className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-12 py-3 rounded-xl text-base font-medium hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]">
-              プロジェクトを作成する
-            </button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
