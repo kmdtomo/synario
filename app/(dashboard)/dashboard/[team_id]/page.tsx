@@ -1,44 +1,21 @@
-import { cookies } from "next/headers";
-import { createClient } from "@/lib/db/supabase/server";
-import { notFound } from "next/navigation";
+import CreateProjectSection from '@/components/modules/dashboard/CreateProjectSection'
+import ProjectList from '@/components/modules/dashboard/ProjectList'
+import { getTeamProfile } from '@/lib/db/team/team-profile'
 
 type PageProps = {
   params: {
     team_id: string;
   };
-  searchParams?: { [key: string]: string | string[] | undefined };
 };
 
 export default async function TeamDashboard({ params }: PageProps) {
-  const { team_id } = await Promise.resolve(params);
-  const cookieStore = await cookies();
-  const supabase = await createClient(cookieStore);
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    notFound();
+  const teamData = await getTeamProfile(params.team_id)
+  
+  if (!teamData || teamData.length === 0) {
+    return <div>チームが見つかりません</div>
   }
 
-  const { data: team, error } = await supabase
-    .from("teams")
-    .select(`
-      id,
-      name,
-      team_kpi,
-      created_at,
-      team_members (
-        id
-      )
-    `)
-    .eq("id", team_id)
-    .single();
-
-  if (error || !team) {
-    console.error("Team fetch error:", error);
-    notFound();
-  }
-
-  const memberCount = team.team_members?.length || 0;
+  const team = teamData[0]
 
   // 進捗率の計算（仮の値）
   const progress = {
@@ -49,7 +26,7 @@ export default async function TeamDashboard({ params }: PageProps) {
 
   return (
     <div className="p-8 space-y-6">
-      {/* チーム情報とKPIを統合したヘッダー */}
+      {/* チーム情報とKPIのヘッダー部分 */}
       <div className="bg-gradient-to-br from-purple-500/10 to-indigo-500/10 rounded-xl p-6">
         <div className="flex items-center gap-12">
           {/* 左側: チーム情報とKPI */}
@@ -65,7 +42,7 @@ export default async function TeamDashboard({ params }: PageProps) {
                 </span>
               </div>
               <p className="text-sm text-gray-600">
-                {memberCount}人のメンバーと共に目標達成を目指しています
+                1人のメンバーと共に目標達成を目指しています
               </p>
             </div>
 
@@ -152,61 +129,8 @@ export default async function TeamDashboard({ params }: PageProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* プロジェクト作成セクション */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-          <div className="p-4 border-b border-gray-100">
-            <h2 className="text-lg font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              プロジェクトを作成
-            </h2>
-          </div>
-          <div className="p-6 flex flex-col items-center justify-center text-center">
-            <div className="w-12 h-12 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 rounded-lg flex items-center justify-center mb-3">
-              <svg 
-                className="w-6 h-6 text-purple-600" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M12 4v16m8-8H4" 
-                />
-              </svg>
-            </div>
-            <h3 className="text-base font-bold text-gray-900 mb-1">
-              新しいプロジェクトを始めましょう
-            </h3>
-            <p className="text-sm text-gray-500 mb-4">
-              チームの目標達成に向けて、新しいプロジェクトを作成できます
-            </p>
-            <button className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:from-purple-700 hover:to-indigo-700 transition-colors">
-              プロジェクトを作成
-            </button>
-          </div>
-        </div>
-
-        {/* プロジェクト一覧セクション */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-          <div className="p-4 border-b border-gray-100">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                進行中のプロジェクト
-              </h2>
-              <button className="text-sm text-purple-600 font-medium hover:text-purple-700">
-                すべて表示
-              </button>
-            </div>
-          </div>
-          <div className="p-4">
-            {/* プロジェクトがない場合 */}
-            <div className="text-center py-8 text-gray-500">
-              まだプロジェクトがありません
-            </div>
-            {/* プロジェクト一覧はここに追加 */}
-          </div>
-        </div>
+        <CreateProjectSection teamId={params.team_id} />
+        <ProjectList teamId={params.team_id} />
       </div>
     </div>
   );

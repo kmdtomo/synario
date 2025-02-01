@@ -18,7 +18,7 @@ export default function TeamSetup() {
   const router = useRouter();
   const KPI_MAX_LENGTH = 30;  // 30文字を上限に設定
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleCreateTeam = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (kpi.length > KPI_MAX_LENGTH) {
       setErrorMessage('KPIは30文字以内で設定してください');
@@ -97,7 +97,7 @@ export default function TeamSetup() {
           <h2 className="text-3xl font-bold text-gray-800">チームを作成</h2>
         </div>
         
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleCreateTeam} className="space-y-8">
           <Input
             label="チーム名"
             type="text"
